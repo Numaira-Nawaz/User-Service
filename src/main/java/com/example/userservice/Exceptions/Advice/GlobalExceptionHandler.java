@@ -1,5 +1,8 @@
-package com.example.userandroles.CustomExceptions;
+package com.example.userservice.CustomExceptions.Advice;
 
+import com.example.userservice.CustomExceptions.ApiResponse;
+import com.example.userservice.CustomExceptions.ResourceNotFoundException;
+import com.example.userservice.CustomExceptions.UserNameFound;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

@@ -1,9 +1,9 @@
-package com.example.userandroles.Service;
+package com.example.userservice.Services;
 
-import com.example.userandroles.Controller.UserController;
-import com.example.userandroles.DTO.UserDTO;
-import com.example.userandroles.Entities.Users;
-import com.example.userandroles.Repository.UserRepo;
+import com.example.userservice.Controllers.UserController;
+import com.example.userservice.DTOs.UserDTO;
+import com.example.userservice.Entities.Users;
+import com.example.userservice.Repositories.UserRepo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

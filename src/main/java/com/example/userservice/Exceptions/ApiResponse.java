@@ -1,4 +1,4 @@
-package com.example.userandroles.CustomExceptions;
+package com.example.userservice.CustomExceptions;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

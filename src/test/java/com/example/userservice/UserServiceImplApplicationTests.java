@@ -1,10 +1,10 @@
-package com.example.userandroles;
+package com.example.userservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class UserAndRolesApplicationTests {
+class UserServiceApplicationTests {
 
     @Test
     void contextLoads() {

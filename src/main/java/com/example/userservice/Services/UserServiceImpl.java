@@ -1,8 +1,8 @@
-package com.example.userandroles.Service;
+package com.example.userservice.Services;
 
-import com.example.userandroles.DTO.UserDTO;
-import com.example.userandroles.Entities.Users;
-import com.example.userandroles.Repository.UserRepo;
+import com.example.userservice.DTOs.UserDTO;
+import com.example.userservice.Entities.Users;
+import com.example.userservice.Repositories.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

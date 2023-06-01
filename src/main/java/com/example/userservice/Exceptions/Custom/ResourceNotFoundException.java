@@ -1,4 +1,4 @@
-package com.example.userandroles.CustomExceptions;
+package com.example.userservice.CustomExceptions;
 
 public class ResourceNotFoundException extends RuntimeException{
     Long id;
