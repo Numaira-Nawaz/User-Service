@@ -2,7 +2,7 @@
 The User Service provides RESTful endpoints to perform CRUD operations on user entities.
 
 **Installation**
-Clone the repository: git clone https://github.com/Numaira-Nawaz/User-Service.git
+Clone the repository: **git clone https://github.com/Numaira-Nawaz/User-Service.git**
 
 Navigate to the project directory: cd User-Service
 
@@ -14,7 +14,7 @@ Start the application: mvn spring-boot:run
 
 Access the API endpoints through http://localhost:8080/v1/user
 
-Endpoints.
+## **Endpoints.**
 
 #### **POST /v1/user**
 Creates a new user.
