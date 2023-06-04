@@ -27,6 +27,7 @@ lastName (required): The last name of the user.
 #### Response:
 
 **201 Created**: User created successfully. Response body contains the created user details.
+
 **409 Conflict**: If the username is already taken.
 
 ### **GET /v1/user/{id}**
@@ -37,6 +38,7 @@ id (required): The ID of the user to retrieve.
 #### Response:
 
 **200 OK**: User found. Response body contains the user details.
+
 **404 Not Found**: User not found.
 
 ### **GET /v1/user/allUser**
@@ -61,7 +63,9 @@ lastName (required): The updated last name of the user.
 #### Response:
 
 **200 OK**: User updated successfully. Response body contains the updated user details.
+
 **404 Not Found**: User not found.
+
 **409 Conflict**: If the username is already taken.
 
 ### **DELETE /v1/user/{id}**
@@ -73,12 +77,15 @@ id (required): The ID of the user to delete.
 #### Response:
 
 **200 OK**: User deleted successfully.
+
 **202 Accepted**: User not found.
 
 **Note:** In the case where a user is not found with the given ID, the response will be 202 Accepted instead of 404 Not Found. This is done to align with your specific requirement.
 
 ### **Error Handling**
+
 **404 Not Found:** Returned when a requested resource is not found.
+
 **409 Conflict:** Returned when there is a conflict, such as a duplicate username.
 
 ##### **Contributing**
