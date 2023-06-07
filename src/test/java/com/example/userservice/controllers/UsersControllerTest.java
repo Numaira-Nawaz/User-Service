@@ -1,53 +1,47 @@
-package com.example.userandroles.Controller;
+package com.example.userservice.controllers;
 
-import com.example.userandroles.CustomExceptions.ApiResponse;
-import com.example.userandroles.CustomExceptions.ResourceNotFoundException;
-import com.example.userandroles.DTO.UserDTO;
-import com.example.userandroles.Entities.Users;
-import com.example.userandroles.Service.UserService;
+import com.example.userservice.DTOs.UserDTO;
+import com.example.userservice.DTOs.UserMapper;
+import com.example.userservice.entities.Users;
+import com.example.userservice.exceptions.ApiResponse;
+import com.example.userservice.exceptions.Custom.ResourceNotFoundException;
+import com.example.userservice.exceptions.Custom.UserAlreadyExit;
+import com.example.userservice.services.UserServiceImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.when;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @AutoConfigureMockMvc
 class UsersControllerTest {
 
     @MockBean
-    private UserService userService;
+    private UserServiceImpl userServiceImpl;
 
     @InjectMocks
     private UserController userController;
@@ -64,85 +58,91 @@ class UsersControllerTest {
         Assertions.assertEquals(MockHttpServletResponse.SC_UNAUTHORIZED, result.getResponse().getStatus());
 
     }
-    @Test
-    void addUser_ShouldReturnCreatedStatus() throws Exception {
 
+    @Test
+    void addUser_Should_ReturnCreatedStatus() throws Exception {
         Users user = new Users(1L, "Numaira", "Nawaz");
+        UserDTO userDTO = new UserDTO(1L, "Numaira", "Nawaz");
         String jsonRequest = om.writeValueAsString(user);
+        when(userServiceImpl.addUser(userDTO)).thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(user));
 
         MvcResult result = mvc.perform(post("/v1/user")
                         .with(SecurityMockMvcRequestPostProcessors.httpBasic("user","pass"))
-                        .contentType(APPLICATION_JSON)
-                        .content(jsonRequest))
-                .andExpect(status().isCreated()) .andReturn();
+                        .content(jsonRequest)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isCreated()).andReturn();
 
+        assertEquals(jsonRequest,result.getResponse().getContentAsString());
         // Verify the response status code
         assertEquals(HttpStatus.CREATED.value(), result.getResponse().getStatus());
     }
 
     @Test
-    public void testAddUser_UserNameFound() throws Exception {
+    public void testAddUser_Should_return_UserAlreadyExist() throws Exception {
         Users user = new Users(1L, "Numaira", "Nawaz");
 
         UserDTO add = new UserDTO(2L, "Numaira", "Nawaz");
         String jsonRequest = om.writeValueAsString(add);
 
-        when(userService.findByName(add.getFirstName(), add.getLastName())).thenReturn(user);
-
+        when(userServiceImpl.findByName(add.getFirstName(), add.getLastName())).thenReturn(user);
+        when(userServiceImpl.addUser(add)).thenThrow(new UserAlreadyExit(user.getFirstName()+" "+user.getLastName()));
         MvcResult result = mvc.perform(post("/v1/user")
                         .with(httpBasic("user","pass"))
                         .content(jsonRequest)
                         .contentType(APPLICATION_JSON))
                 .andReturn();
 
-        assertEquals(HttpStatus.CONFLICT.value(), result.getResponse().getStatus());
+        String jsonResponse = result.getResponse().getContentAsString();
+        ApiResponse response = om.readValue(jsonResponse, ApiResponse.class);
 
+        assertEquals(HttpStatus.CONFLICT.value(), result.getResponse().getStatus());
+        assertEquals(user.getFirstName()+" "+user.getLastName()+" already Found. TRY ANOTHER.",response.getMessage());
     }
 
     @Test
-    public void testFindUser_Success() throws Exception {
+    public void should_FindUser_Successfully() throws Exception {
         Users user = new Users(1L, "Numaira", "Nawaz");
-
-        when(userService.findUserById(1L)).thenReturn(user);
+        UserDTO userDTO = UserMapper.entityToDTO(user);
+        when(userServiceImpl.findUserById(1L)).thenReturn(userDTO);
         MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/v1/user/{id}", 1L)
                         .with(httpBasic("user","pass"))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
-
         String jsonResponse = result.getResponse().getContentAsString();
         Users responseUser = om.readValue(jsonResponse, Users.class);
+
+        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
         assertEquals(user.getId(), responseUser.getId());
         assertEquals(user.getFirstName(), responseUser.getFirstName());
         assertEquals(user.getLastName(), responseUser.getLastName());
     }
 
     @Test
-    public void testFindUser_NotFoundException() throws Exception {
+    public void given_NotFoundException_when_testFindUser() throws Exception {
         Long id = 4L;
-        when(userService.findUserById(id)).thenThrow(ResourceNotFoundException.class);
+        when(userServiceImpl.findUserById(id)).thenThrow(new ResourceNotFoundException(id));
         MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/v1/user/{id}", id)
                         .with(httpBasic("user","pass"))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andReturn();
 
-        assertEquals(HttpStatus.NOT_FOUND.value(), result.getResponse().getStatus());
-
         String jsonResponse = result.getResponse().getContentAsString();
         ApiResponse response = om.readValue(jsonResponse, ApiResponse.class);
+
+        assertEquals(HttpStatus.NOT_FOUND.value(), result.getResponse().getStatus());
         assertEquals("User Not Found with the id: " +id,response.getMessage());
 
     }
 
 
     @Test
-    public void testDeleteUser_Success() throws Exception {
+    public void given_statusOK_when_DeleteUser() throws Exception {
 
         Users user = new Users(2L, "Numaira", "Nawaz");
-        when(userService.delete(2L)).thenReturn(user);
+        when(userServiceImpl.delete(2L)).thenReturn(ResponseEntity.of(Optional.of(user)));
         MvcResult result = mvc.perform(MockMvcRequestBuilders.delete("/v1/user/{id}", 2L)
                         .with(httpBasic("user", "pass"))
                         .contentType(APPLICATION_JSON))
@@ -150,39 +150,39 @@ class UsersControllerTest {
                 .andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
-        System.out.println(jsonResponse);
-        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
-
         Users responseUser = om.readValue(jsonResponse, Users.class);
+
+        assertEquals(HttpStatus.OK.value(), result.getResponse().getStatus());
         assertEquals(user.getId(), responseUser.getId());
         assertEquals(user.getFirstName(), responseUser.getFirstName());
         assertEquals(user.getLastName(), responseUser.getLastName());
     }
 
     @Test
-    public void testDeleteUser_UserNotFound() throws Exception {
+    public void given_UserNotFound_when_DeleteUser() throws Exception {
         Long userId = 1L;
 
-        when(userService.findUserById(userId)).thenThrow(new ResourceNotFoundException(userId));
+        when(userServiceImpl.delete(userId)).thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body("User Not Found with the id: " + userId));
 
-        MvcResult result = mvc.perform(MockMvcRequestBuilders.delete("/v1/user/{id}", userId)
+        MvcResult result = mvc.perform(delete("/v1/user/{id}", userId)
                         .with(httpBasic("user","pass")))
                 .andExpect(status().isAccepted())
                 .andReturn();
 
         String jsonResponse = result.getResponse().getContentAsString();
-        ApiResponse response = om.readValue(jsonResponse, ApiResponse.class);
-        assertEquals("No User Found with the ID: " + userId, response.getMessage());
-        assertFalse(response.isSuccess());
+
+        assertEquals(HttpStatus.ACCEPTED.value(),result.getResponse().getStatus());
+        assertEquals("User Not Found with the id: " + userId, jsonResponse);
     }
 
     @Test
-    public void testFindAllUsers_Success() throws Exception {
+    public void should_return_all_users_successfully() throws Exception {
         List<Users> usersList = new ArrayList<>();
         usersList.add(new Users(1L, "Nimra", "Ghumman"));
         usersList.add(new Users(2L, "Isha", "Haram"));
 
-        when(userService.findAll()).thenReturn(usersList);
+        when(userServiceImpl.findAll()).thenReturn(usersList);
         MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/v1/user/allUser")
                         .with(httpBasic("user","pass")))
                 .andExpect(status().isOk())
@@ -190,6 +190,7 @@ class UsersControllerTest {
 
         String jsonResponse = result.getResponse().getContentAsString();
         List<Users> responseUsersList = om.readValue(jsonResponse, new TypeReference<List<Users>>(){});
+
         assertEquals(usersList.size(), responseUsersList.size());
 
     }

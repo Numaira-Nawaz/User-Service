@@ -1,7 +1,8 @@
-package com.example.userandroles.Entities;
+package com.example.userservice.entities;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,8 @@ import javax.persistence.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
+
 public class Users implements Comparable<Users>{
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
