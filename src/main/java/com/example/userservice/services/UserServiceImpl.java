@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
         Users exist = findByName(userDTO.getFirstName(),userDTO.getLastName());
         if (exist==null) {
             Users user = UserMapper.dtoToEntity(user1);
-             Users usersUpdated = userRepo.save(user);
+            Users usersUpdated = userRepo.save(user);
             UserDTO userDTOUpdated =  entityToDTO(usersUpdated);
             return ResponseEntity.of(Optional.of(userDTOUpdated)).getBody();
         }else {

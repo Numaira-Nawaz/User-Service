@@ -53,7 +53,7 @@ class UsersControllerTest {
     @Test
     public void given_inValidCredentials_unauthorized_response() throws Exception {
         MvcResult result = mvc.perform(get("/v1/user/allUser")
-                        .with(SecurityMockMvcRequestPostProcessors.httpBasic("user24", "322pass")).contentType(APPLICATION_JSON))
+                        .with(SecurityMockMvcRequestPostProcessors.httpBasic("user", "322pass")).contentType(APPLICATION_JSON))
                 .andReturn();
         Assertions.assertEquals(MockHttpServletResponse.SC_UNAUTHORIZED, result.getResponse().getStatus());
 
@@ -67,7 +67,7 @@ class UsersControllerTest {
         when(userServiceImpl.addUser(userDTO)).thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(user));
 
         MvcResult result = mvc.perform(post("/v1/user")
-                        .with(SecurityMockMvcRequestPostProcessors.httpBasic("user","pass"))
+                        .with(SecurityMockMvcRequestPostProcessors.httpBasic("us2er","pass"))
                         .content(jsonRequest)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isCreated()).andReturn();

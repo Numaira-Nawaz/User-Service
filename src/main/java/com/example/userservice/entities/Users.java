@@ -23,7 +23,6 @@ public class Users implements Comparable<Users>{
     private Long id;
     private String firstName;
     private String lastName;
-
     @Override
     public int compareTo(Users o) {
         return this.getLastName().compareToIgnoreCase(o.getLastName());
